@@ -1,50 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Rover Dashboard</title>
-    <style>
-        body { font-family: Arial; margin: 50px; }
-        input { margin: 5px; padding: 5px; width: 150px; }
-        button { padding: 5px 10px; margin: 5px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Rover Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Rover Control Dashboard</h1>
-    
-    <label>Latitude:</label>
-    <input type="number" id="lat" step="0.000001"><br>
-    
-    <label>Longitude:</label>
-    <input type="number" id="lon" step="0.000001"><br>
-    
-    <label>Status:</label>
-    <select id="status">
-        <option value="start">Start</option>
-        <option value="stop">Stop</option>
-    </select><br>
+  <h1>Rover Dashboard</h1>
+  <div class="container">
+    {% for rover in rovers %}
+      <div class="rover-block" onclick="window.location.href='/rover/{{ rover.id }}'">
+        <div>{{ rover.name }}</div>
+        <div class="status">Status: {{ rover.status }}</div>
+      </div>
+    {% endfor %}
 
-    <button onclick="sendCommand()">Send Command</button>
+    <div class="add-button" onclick="showForm()">+</div>
+  </div>
 
-    <h3>Current Command:</h3>
-    <pre id="currentCommand">{{ command }}</pre>
+  <form id="addForm" method="POST">
+    <input type="text" name="name" placeholder="Rover Name" required>
+    <button type="submit">Add Rover</button>
+  </form>
 
-    <script>
-        async function sendCommand() {
-            const lat = parseFloat(document.getElementById("lat").value);
-            const lon = parseFloat(document.getElementById("lon").value);
-            const status = document.getElementById("status").value;
-
-            const payload = {lat, lon, status};
-            const res = await fetch("/set", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payload)
-            });
-
-            const data = await res.json();
-            document.getElementById("currentCommand").innerText = JSON.stringify(data.command, null, 2);
-            alert("Command sent!");
-        }
-    </script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

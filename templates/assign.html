@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assign Coordinates</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Assign Coordinates to {{ rover.name }}</h2>
+    <form method="POST">
+      <label>Latitude:</label>
+      <input type="number" name="lat" required>
+
+      <label>Longitude:</label>
+      <input type="number" name="lon" required>
+
+      <button type="submit">Send to Rover</button>
+    </form>
+    <div class="back"><a href="/">← Back to Dashboard</a></div>
+  </div>
+</body>
+</html>

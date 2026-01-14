@@ -1,62 +1,124 @@
-from flask import Flask, render_template, request, jsonify
-from apscheduler.schedulers.background import BackgroundScheduler
-import requests
-import atexit
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rovers.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-# ===== In-memory storage of commands =====
-# For multiple rovers, use a dict: {'rover1': {...}, 'rover2': {...}}
-rover_command = {
-    "lat": 0.0,
-    "lon": 0.0,
-    "status": "idle"   # 'start' or 'stop'
-}
+# ====== Models ======
+class Rover(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(20), default='idle')  # idle, delivering, stop
+    location_lat = db.Column(db.Integer, default=0)
+    location_lon = db.Column(db.Integer, default=0)
+    positions = db.relationship('Position', backref='rover', lazy=True)
 
-# ===== Routes =====
-@app.route("/")
-def dashboard():
-    # Load UI page
-    return render_template("index.html", command=rover_command)
+class Position(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rover_id = db.Column(db.Integer, db.ForeignKey('rover.id'), nullable=False)
+    lat = db.Column(db.Integer, nullable=False)
+    lon = db.Column(db.Integer, nullable=False)
+    phase = db.Column(db.String(10), default='lat')  # lat/lon phase
+    status = db.Column(db.String(10), default='normal')  # shift/normal
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.route("/set", methods=["POST"])
-def set_coordinates():
-    # Receive coordinates from web UI
+# ====== Routes ======
+
+# Dashboard: show all rovers + create new
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        name = request.form.get("name")
+        if name:
+            new_rover = Rover(name=name)
+            db.session.add(new_rover)
+            db.session.commit()
+        return redirect(url_for('index'))
+    
+    rovers = Rover.query.all()
+    return render_template("index.html", rovers=rovers)
+
+# Delete rover
+@app.route("/rover/<int:rover_id>/delete", methods=["POST"])
+def delete_rover(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+    db.session.delete(rover)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+# Assign coordinates to rover
+@app.route("/rover/<int:rover_id>", methods=["GET", "POST"])
+def assign_coordinates(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+    if request.method == "POST":
+        lat = int(request.form.get("lat"))
+        lon = int(request.form.get("lon"))
+        rover.location_lat = lat
+        rover.location_lon = lon
+        rover.status = 'delivering'
+        db.session.commit()
+        # Redirect to ESP polling route
+        return redirect(url_for('get_rover_command', rover_id=rover.id))
+    return render_template("assign.html", rover=rover)
+
+# ESP polls this route to get latest command
+@app.route("/rover/<int:rover_id>/get")
+def get_rover_command(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+    return jsonify({
+        "lat": rover.location_lat,
+        "lon": rover.location_lon,
+        "status": rover.status
+    })
+
+# ESP updates position after reaching a step
+@app.route("/rover/<int:rover_id>/position", methods=["POST"])
+def update_position(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
     data = request.get_json()
-    lat = data.get("lat")
-    lon = data.get("lon")
-    cmd = data.get("status", "start")
+    pos = Position(
+        rover_id=rover.id,
+        lat=int(data['lat']),
+        lon=int(data['lon']),
+        phase=data.get('phase','lat'),
+        status=data.get('status','shift')
+    )
+    db.session.add(pos)
+    db.session.commit()
 
-    rover_command["lat"] = lat
-    rover_command["lon"] = lon
-    rover_command["status"] = cmd
+    # Optional: stop other rovers if current rover is in 'shift' phase
+    if pos.status == 'shift':
+        other_rovers = Rover.query.filter(Rover.id != rover.id).all()
+        for r in other_rovers:
+            r.status = 'stop'
+        db.session.commit()
+    
+    return jsonify({"ok": True})
 
-    return jsonify({"success": True, "message": "Command updated", "command": rover_command})
+# Master route to release rovers
+@app.route("/master/release/<int:rover_id>", methods=["POST"])
+def release_rover(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+    rover.status = 'delivering'
+    db.session.commit()
+    return jsonify({"released": rover_id})
 
-@app.route("/get")
-def get_command():
-    # ESP polls this endpoint to get latest command
-    return jsonify(rover_command)
+# Master route to stop all rovers
+@app.route("/master/stop_all", methods=["POST"])
+def stop_all():
+    rovers = Rover.query.all()
+    for r in rovers:
+        r.status = 'stop'
+    db.session.commit()
+    return jsonify({"stopped": True})
 
-@app.route("/ping")
-def ping():
-    return "pong"
+# Initialize DB
+@app.before_request
+def create_tables():
+    db.create_all()
 
-# ===== Keep-alive function =====
-def keep_alive():
-    try:
-        url = "https://your-render-url.onrender.com/ping"
-        r = requests.get(url, timeout=5)
-        print(f"Keep-alive ping sent, status: {r.status_code}")
-    except Exception as e:
-        print(f"Keep-alive error: {e}")
-
-# ===== Scheduler =====
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=keep_alive, trigger="interval", minutes=15)
-scheduler.start()
-atexit.register(lambda: scheduler.shutdown())
-
-# ===== Run app =====
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

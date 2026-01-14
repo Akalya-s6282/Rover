@@ -1,0 +1,118 @@
+/* General Body */
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings */
+h1, h2 {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Rover Container */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Rover Block */
+.rover-block {
+  background: white;
+  width: 180px;
+  height: 120px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.rover-block:hover {
+  transform: scale(1.05);
+}
+
+.status {
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+/* Add Rover Button */
+.add-button {
+  width: 180px;
+  height: 120px;
+  background: #4CAF50;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  font-size: 48px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-button:hover {
+  background: #45a049;
+}
+
+/* Add Form */
+form {
+  display: none;
+  margin-top: 20px;
+  text-align: center;
+}
+
+input {
+  padding: 5px;
+  margin: 5px;
+  width: 80px;
+}
+
+button {
+  padding: 5px 10px;
+  margin-top: 5px;
+}
+
+/* Assign Page */
+.back {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.back a {
+  color: #555;
+  text-decoration: none;
+}
+
+/* Assign Container */
+.container form input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.container form button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  width: 100%;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.container form button:hover {
+  background: #45a049;
+}
