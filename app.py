@@ -78,33 +78,90 @@ def get_rover_command(rover_id):
 @app.route("/rover/<int:rover_id>/position", methods=["POST"])
 def update_position(rover_id):
     rover = Rover.query.get_or_404(rover_id)
-    data = request.get_json()
-    pos = Position(
-        rover_id=rover.id,
-        lat=int(data['lat']),
-        lon=int(data['lon']),
-        phase=data.get('phase','lat'),
-        status=data.get('status','shift')
-    )
-    db.session.add(pos)
+    data = request.get_json(force=True)
+
+    lat = data.get("lat")
+    lon = data.get("lon")
+    phase = data.get("phase", "lat")     # lat | lon | done
+    status = data.get("status", "run")   # run | shift | stop
+
+    # Store position ONLY if lat & lon exist
+    if lat is not None and lon is not None:
+        pos = Position(
+            rover_id=rover.id,
+            lat=int(lat),
+            lon=int(lon),
+            phase=phase,
+            status=status
+        )
+        db.session.add(pos)
+
+    # Update rover global status
+    rover.status = status
+
+    # 🚦 MASTER CONTROL LOGIC
+    if status == "shift":
+        # stop all others
+        Rover.query.filter(
+            Rover.id != rover.id
+        ).update({Rover.status: "stop"})
+
+    if status == "run":
+        # release others
+        Rover.query.update({Rover.status: "run"})
+
     db.session.commit()
 
-    # Optional: stop other rovers if current rover is in 'shift' phase
-    if pos.status == 'shift':
-        other_rovers = Rover.query.filter(Rover.id != rover.id).all()
-        for r in other_rovers:
-            r.status = 'stop'
-        db.session.commit()
-    
-    return jsonify({"ok": True})
+    return jsonify({
+        "ok": True,
+        "rover": rover.id,
+        "status": status,
+        "phase": phase
+    })
+
+@app.route("/rover/<int:rover_id>/position", methods=["GET"])
+def get_position(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+
+    last_pos = Position.query.filter_by(rover_id=rover_id)\
+                             .order_by(Position.id.desc())\
+                             .first()
+
+    if not last_pos:
+        return jsonify({
+            "rover": rover_id,
+            "message": "No position data yet"
+        })
+
+    return jsonify({
+        "rover": rover.id,
+        "lat": last_pos.lat,
+        "lon": last_pos.lon,
+        "phase": last_pos.phase,
+        "status": last_pos.status,
+        "time": last_pos.timestamp.isoformat()
+    })
+
+
 
 # Master route to release rovers
-@app.route("/master/release/<int:rover_id>", methods=["POST"])
-def release_rover(rover_id):
+@app.route("/master/release/<int:rover_id>", methods=["POST", "GET"])
+def master_release(rover_id):
     rover = Rover.query.get_or_404(rover_id)
-    rover.status = 'delivering'
+
+    # Release this rover
+    rover.status = "run"
+
+    # Release all other rovers
+    Rover.query.update({Rover.status: "run"})
+
     db.session.commit()
-    return jsonify({"released": rover_id})
+
+    return jsonify({
+        "ok": True,
+        "message": f"Rover {rover_id} released",
+        "status": "run"
+    })
 
 # Master route to stop all rovers
 @app.route("/master/stop_all", methods=["POST"])
