@@ -11,6 +11,9 @@
     {% for rover in rovers %}
       <div class="rover-block" onclick="window.location.href='/rover/{{ rover.id }}'">
         <div>{{ rover.name }}</div>
+        <div class="lat">Lat: {{ rover.lat }}</div>
+        <div class="lon">Lon: {{ rover.lon }}</div>
+        <div class="phase">Phase: {{ rover.phase }}</div>
         <div class="status">Status: {{ rover.status }}</div>
       </div>
     {% endfor %}
@@ -23,6 +26,6 @@
     <button type="submit">Add Rover</button>
   </form>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

@@ -6,9 +6,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <div class="container">
+  <div class ="container-coordinnates">
     <h2>Assign Coordinates to {{ rover.name }}</h2>
-    <form method="POST">
+    <div class ="Coordinates">
+      <form class="Coordinates" method="POST">
       <label>Latitude:</label>
       <input type="number" name="lat" required>
 
@@ -17,6 +18,8 @@
 
       <button type="submit">Send to Rover</button>
     </form>
+  </div>
+    
     <div class="back"><a href="/">← Back to Dashboard</a></div>
   </div>
 </body>

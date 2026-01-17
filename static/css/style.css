@@ -20,6 +20,32 @@ h1, h2 {
   gap: 20px;
   padding: 20px;
 }
+.container-coordinates {
+  display: flex;
+  flex-direction: column!important;
+  text-align: left;
+  gap: 20px;
+  padding: 20px;
+}
+.container_coordinates form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
+}
+.Coordinates form button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  width: 250px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+
 
 /* Rover Block */
 .rover-block {
@@ -41,7 +67,7 @@ h1, h2 {
   transform: scale(1.05);
 }
 
-.status {
+.status, .lon, .lat, .phase {
   margin-top: 5px;
   font-weight: bold;
 }
@@ -61,6 +87,7 @@ h1, h2 {
   transition: background 0.2s;
 }
 
+
 .add-button:hover {
   background: #45a049;
 }
@@ -70,6 +97,12 @@ form {
   display: none;
   margin-top: 20px;
   text-align: center;
+}
+.Coordinates {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  text-align: left;
 }
 
 input {
@@ -113,6 +146,6 @@ button {
   border-radius: 5px;
 }
 
-.container form button:hover {
+.container form button:hover, .Coordinates form button:hover {
   background: #45a049;
 }
