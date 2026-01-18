@@ -10,11 +10,16 @@
   <div class="container">
     {% for rover in rovers %}
       <div class="rover-block" onclick="window.location.href='/rover/{{ rover.id }}'">
-        <div>{{ rover.name }}</div>
-        <div class="lat">Lat: {{ rover.lat }}</div>
-        <div class="lon">Lon: {{ rover.lon }}</div>
-        <div class="phase">Phase: {{ rover.phase }}</div>
-        <div class="status">Status: {{ rover.status }}</div>
+        <div class="rover-name">{{ rover.name }}</div>
+        {% for position in position %}
+          <div class="lat">Aisle: {{ position.lat }}</div>
+          <div class="lon">Table No: {{ position.lon }}</div>
+          <div class="phase">Phase: {{ position.phase }}</div>
+          <div class="status">Status: {{ position.status }}</div>
+        {% endfor %}
+        <form action="/rover/{{ rover.id }}/delete" method="post" class ="Coordinates">
+    <button type="submit" style="color:red;">Delete Rover</button>
+</form>
       </div>
     {% endfor %}
 

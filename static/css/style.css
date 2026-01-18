@@ -51,7 +51,7 @@ h1, h2 {
 .rover-block {
   background: white;
   width: 180px;
-  height: 120px;
+  height: 200px;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   display: flex;
@@ -67,7 +67,7 @@ h1, h2 {
   transform: scale(1.05);
 }
 
-.status, .lon, .lat, .phase {
+.rover-name {
   margin-top: 5px;
   font-weight: bold;
 }
@@ -75,7 +75,7 @@ h1, h2 {
 /* Add Rover Button */
 .add-button {
   width: 180px;
-  height: 120px;
+  height: 200px;
   background: #4CAF50;
   color: white;
   display: flex;

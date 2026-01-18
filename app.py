@@ -39,15 +39,23 @@ def index():
         return redirect(url_for('index'))
     
     rovers = Rover.query.all()
-    return render_template("index.html", rovers=rovers)
+    position = Position.query.all()
+    print(position)
+    return render_template("index.html", rovers=rovers, position=position)
 
 # Delete rover
 @app.route("/rover/<int:rover_id>/delete", methods=["POST"])
 def delete_rover(rover_id):
     rover = Rover.query.get_or_404(rover_id)
+
+    # delete child rows first (important)
+    Position.query.filter_by(rover_id=rover.id).delete()
+
+    # delete rover
     db.session.delete(rover)
     db.session.commit()
-    return redirect(url_for('index'))
+
+    return redirect(url_for("index"))
 
 # Assign coordinates to rover
 @app.route("/rover/<int:rover_id>", methods=["GET", "POST"])
@@ -110,6 +118,15 @@ def update_position(rover_id):
         # release others
         Rover.query.update({Rover.status: "run"})
 
+    if status == "done":
+        Position.query.filter_by(rover_id=rover.id).delete()
+        rover.status = "idle"   # or "completed"
+        db.session.commit()
+
+        return jsonify({
+            "ok": True,
+            "message": "Delivery completed. Positions cleared."
+        })
     db.session.commit()
 
     return jsonify({
@@ -118,6 +135,7 @@ def update_position(rover_id):
         "status": status,
         "phase": phase
     })
+   
 
 @app.route("/rover/<int:rover_id>/position", methods=["GET"])
 def get_position(rover_id):
@@ -132,6 +150,7 @@ def get_position(rover_id):
             "rover": rover_id,
             "message": "No position data yet"
         })
+       
 
     return jsonify({
         "rover": rover.id,
@@ -141,6 +160,31 @@ def get_position(rover_id):
         "status": last_pos.status,
         "time": last_pos.timestamp.isoformat()
     })
+
+@app.route("/test/rover/<int:rover_id>/position")
+def test_insert_position(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+
+    pos = Position(
+        rover_id=rover.id,
+        lat=2,
+        lon=3,
+        phase="lat",
+        status="run"
+    )
+
+    rover.status = "run"
+
+    db.session.add(pos)
+    db.session.commit()
+
+    return jsonify({
+        "ok": True,
+        "message": "Test position inserted",
+        "rover": rover.id
+    })
+
+    
 
 
 
