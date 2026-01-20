@@ -1,7 +1,13 @@
 /* General Body */
 body {
+  background-image: url('pictures/background.jpg');
+  background-size: cover;      /* Scales the image to cover the screen */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat;
+  min-height: 100vh;           /* Forces the body to be the full height of the screen */
+  margin: 0;
   font-family: Arial, sans-serif;
-  background: #f0f2f5;
+  /* background-color: #ef5614;  */
   margin: 0;
   padding: 0;
 }
@@ -23,21 +29,24 @@ h1, h2 {
 .container-coordinates {
   display: flex;
   flex-direction: column!important;
-  text-align: left;
+  align-items: flex-start;
   gap: 20px;
   padding: 20px;
+  width: fit-content;
 }
 .container_coordinates form {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   width: 250px;
 }
 .Coordinates form button {
   margin-top: 15px;
   padding: 10px 20px;
+  align-self: center;
   width: 250px;
-  background: #4CAF50;
+  background: #7dc1f8;
   color: white;
   border: none;
   cursor: pointer;
@@ -76,7 +85,7 @@ h1, h2 {
 .add-button {
   width: 180px;
   height: 200px;
-  background: #4CAF50;
+  background: #7dc1f8;
   color: white;
   display: flex;
   justify-content: center;
@@ -87,9 +96,32 @@ h1, h2 {
   transition: background 0.2s;
 }
 
+.add button {
+  width: 100px;
+  height: 40px;
+  background: #d4d4d4;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.add input {
+  width: 150px;
+  height: 30px;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  border: 1px solid #4a4a4a;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;
+}
+
 
 .add-button:hover {
-  background: #45a049;
+  background: #4878d0;
 }
 
 /* Add Form */
@@ -98,17 +130,54 @@ form {
   margin-top: 20px;
   text-align: center;
 }
+
+/* Container for each form row */
+.Aisle, .TableNo, .submit-button {
+  display: flex;
+  flex-direction: row;
+  align-self: center; 
+  padding: 8px 0;      /* Cleaner spacing */
+  margin-top: 5px;
+}
+
+/* Ensure labels have the same width so inputs align */
+.Aisle label, .TableNo label {
+  width: 80px;        
+  text-align: right;   /* Right-align text for a professional look */
+  margin-right: 15px;  /* Space between label and input */
+  font-weight: bold;
+}
+
+/* Optional: Make inputs look consistent with your Rover theme */
+input[type="number"] {
+  width: 150px;
+  height: 30px;
+  margin-left: 35px;
+  background: #fffdfd;
+  color: rgb(0, 0, 0);
+  border: 1px solid #4a4a4a;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;      /* Standard width for the number boxes */
+}
 .Coordinates {
   display: flex;
   flex-direction: column;
   margin-top: 20px;
-  text-align: left;
+  margin-left: 30px;
+  align-items: flex-start;
 }
 
 input {
+  width: 150px;
+  height: 30px;
+  margin-left: 35px;
+  background: #fffdfd;
+  color: rgb(0, 0, 0);
+  border: 1px solid #4a4a4a;
+  border-radius: 5px;
   padding: 5px;
-  margin: 5px;
-  width: 80px;
+  font-size: 16px;
 }
 
 button {
@@ -138,7 +207,7 @@ button {
   margin-top: 15px;
   padding: 10px 20px;
   width: 100%;
-  background: #4CAF50;
+  background: #7dc1f8;
   color: white;
   border: none;
   cursor: pointer;
@@ -147,5 +216,6 @@ button {
 }
 
 .container form button:hover, .Coordinates form button:hover {
-  background: #45a049;
+  background: #4878d0
+  ;
 }

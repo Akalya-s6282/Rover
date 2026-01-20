@@ -69,7 +69,7 @@ def assign_coordinates(rover_id):
         rover.status = 'delivering'
         db.session.commit()
         # Redirect to ESP polling route
-        return redirect(url_for('get_rover_command', rover_id=rover.id))
+        # return redirect(url_for('get_rover_command', rover_id=rover.id))
     return render_template("assign.html", rover=rover)
 
 # ESP polls this route to get latest command

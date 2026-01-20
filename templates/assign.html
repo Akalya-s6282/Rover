@@ -10,12 +10,16 @@
     <h2>Assign Coordinates to {{ rover.name }}</h2>
     <div class ="Coordinates">
       <form class="Coordinates" method="POST">
+      <div class ="Aisle">
       <label>Aisle:</label>
       <input type="number" name="lat" required>
-
+      </div>
+      <div class ="TableNo">
       <label>Table No:</label>
       <input type="number" name="lon" required>
-
+      
+      </div>
+      
       <button type="submit">Send to Rover</button>
     </form>
   </div>
