@@ -2,11 +2,19 @@
 let selectedRoverId = null;
 let pollInterval = null;
 
-/*==========To show Form===========*/
-function showForm() {
-    const form = document.getElementById("addForm");
-    form.style.display = "block";
-  }
+/*========== Toggle Form Modal ===========*/
+function toggleForm() {
+    const modal = document.getElementById("formModal");
+    modal.classList.toggle("show");
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById("formModal");
+    if (event.target === modal) {
+        modal.classList.remove("show");
+    }
+});
 
 function show_latitudegpio() {
   const gpioSection = document.getElementById("gpioSection");
