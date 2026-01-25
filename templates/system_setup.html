@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>System Setup</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<h2>System Latitude Setup</h2>
+<div class ="setup-form">
+
+  <!-- Step 1: Enter Total Latitudes -->
+  <form method="POST" class="setup-form">
+    <label>Total Latitudes:</label>
+    <input type="number" name="total_latitudes" value="{{ config.total_latitudes if config else '' }}" required>
+    <button type="button" id="showGpioBtn">Save Total Latitudes</button>
+  </form>
+
+  <!-- Step 2: GPIO Mapping (shown after config is saved) -->
+  <div id="gpioSection" ">
+    <p id="gpioSavedNotice"><b>✓ Total Latitudes Saved {{config.total_latitudes}}</b></p>
+    <h3 >Latitude → GPIO Mapping</h3>
+
+    <form method="POST" class="setup-form">
+      <input type="hidden" name="action" value="save_gpio">
+      <input type="hidden" name="total_latitudes" id="totalLatHidden" value="">
+      <div id="gpioInputsContainer"></div>
+      <button type="submit">Save GPIO Configuration</button>
+    </form>
+  </div>
+
+</div>
+
+<a href="/" style="display:block;text-align:center;margin:15px;">← Back to Dashboard</a>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

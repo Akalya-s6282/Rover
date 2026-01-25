@@ -26,7 +26,7 @@ h1, h2 {
   gap: 20px;
   padding: 20px;
 }
-.container-coordinates {
+.container-coordinates, .setup-form {
   display: flex;
   flex-direction: column!important;
   align-items: flex-start;
@@ -34,14 +34,14 @@ h1, h2 {
   padding: 20px;
   width: fit-content;
 }
-.container_coordinates form {
+.container_coordinates form, .setup-form form {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   width: 250px;
 }
-.Coordinates form button {
+.Coordinates form button, .setup-form button {
   margin-top: 15px;
   padding: 10px 20px;
   align-self: center;
@@ -131,7 +131,57 @@ form {
   text-align: center;
 }
 
-/* Container for each form row */
+/* Setup Form - Override display:none */
+/* .setup-form form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 250px;
+}
+
+.setup-form {
+  display: flex;
+  justify-content: center;
+  margin: 20px auto;
+  flex-direction: column;
+  align-items: center;
+} */
+
+#gpioSection {
+  display: none;
+  border: 2px solid #7dc1f8;
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+#gpioInputsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.gpio-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gpio-row label {
+  font-weight: bold;
+  color: #333;
+}
+
+.gpio-row input[type="number"] {
+  padding: 8px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  font-size: 14px;
+}
 .Aisle, .TableNo, .submit-button {
   display: flex;
   flex-direction: row;
