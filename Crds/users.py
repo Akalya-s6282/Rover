@@ -1,11 +1,52 @@
 from flask import Blueprint, redirect, request, render_template, url_for, session
 
 from .db import db
-from .models import RoverConfig, LatitudeGPIO
+from .models.models import Rover, Position, RoverConfig, LatitudeGPIO
 
-system_setup = Blueprint('system_setup',__name__)
+users = Blueprint('users',__name__)
 
-@system_setup.route("/system/setup", methods=["GET", "POST"])
+@users.route("/rovers", methods=["GET", "POST"])
+def dashboard():
+    if request.method == "POST":
+        name = request.form.get("name")
+        hotel_id = session.get('hotel_id')
+        if name and hotel_id:
+            new_rover = Rover(name=name, hotel_id=hotel_id)
+            db.session.add(new_rover)
+            db.session.commit()
+        return redirect(url_for('users.dashboard'))
+    
+    hotel_id = session.get('hotel_id')
+    rover_list = Rover.query.filter_by(hotel_id=hotel_id).all() if hotel_id else []
+    return render_template("index.html", rovers=rover_list)
+
+@users.route("/rover/<int:rover_id>", methods=["GET", "POST"])
+def assign_coordinates(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+    if request.method == "POST":
+        lat = int(request.form.get("lat"))
+        lon = int(request.form.get("lon"))
+        rover.location_lat = lat
+        rover.location_lon = lon
+        rover.status = 'delivering'
+        db.session.commit()
+        return redirect(url_for('users.assign_coordinates', rover_id=rover.id))
+    return render_template("assign.html", rover=rover)
+
+
+@users.route("/rover/<int:rover_id>/delete", methods=["POST"])
+def delete_rover_func(rover_id):
+    rover = Rover.query.get_or_404(rover_id)
+
+    # delete child rows first (important)
+    Position.query.filter_by(rover_id=rover.id).delete()
+
+    # delete rover
+    db.session.delete(rover)
+    db.session.commit()
+
+    return redirect(url_for("users.dashboard"))
+@users.route("/system/setup", methods=["GET", "POST"])
 def configure_system():
     if request.method == "POST":
         action = request.form.get("action")
@@ -32,7 +73,7 @@ def configure_system():
                 db.session.commit()
                 print("DEBUG: Config saved successfully")
                 # Post/Redirect/Get — redirect so the GET will render GPIO inputs
-                return redirect(url_for("system_setup", show_gpio=1))
+                return redirect(url_for("users.configure_system", show_gpio=1))
 
         # Action 2: Save GPIO configuration
         elif action == "save_gpio":
@@ -68,7 +109,7 @@ def configure_system():
 
             db.session.commit()
             print("DEBUG: GPIO Configuration saved successfully")
-            return redirect(url_for("index"))
+            return redirect(url_for("users.dashboard"))
 
     # GET request - query config fresh
     config = RoverConfig.query.first()
@@ -78,3 +119,4 @@ def configure_system():
 
     show_gpio = request.args.get('show_gpio')
     return render_template("system_setup.html", config=config, show_gpio=show_gpio)
+

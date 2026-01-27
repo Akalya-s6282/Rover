@@ -66,7 +66,7 @@ h2 {
   padding: 20px;
   width: fit-content;
 }
-.login-box {
+.login-box, .signup-box {
   background: white;
   padding: 40px;
   width: 420px;
@@ -75,14 +75,14 @@ h2 {
   text-align: center;
 }
 
-.login-box form {
+.login-box form, .signup-box form{
   display: flex;
   flex-direction: column;
   gap: 15px;
   margin-top: 20px;
 }
 
-.login-box form input {
+.login-box form input, .signup-box form input {
   width: 100%;
   padding: 12px;
   border-radius: 6px;
@@ -91,13 +91,13 @@ h2 {
   box-sizing: border-box;
 }
 
-.login-box form input:focus {
+.login-box form input:focus , .signup-box form input:focus {
   outline: none;
   border-color: #4CAF50;
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
-.login-box form button, .setup-form form button {
+.login-box form button, .setup-form form button, .signup-box form button {
   width: 100%;
   padding: 12px;
   background: #4CAF50;
@@ -216,6 +216,16 @@ h2 {
   transform: scale(1.05);
 }
 
+/* .signup-box {
+  background: white;
+  padding: 40px;
+  width: 320px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.3);
+  text-align: center;
+} */
+
+
 /* Footer */
 .footer {
   text-align: center;
@@ -319,7 +329,7 @@ input {
   padding: 5px;
   font-size: 16px;
 }
-.login-body {
+.login-body,.signup-body {
   font-family: Arial, sans-serif;
   height: 100vh;
   display: flex;

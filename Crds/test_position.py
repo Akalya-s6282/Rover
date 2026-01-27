@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 
 from .db import db
-from .models import Rover, Position
+from .models.models import Rover, Position
 
 test_position = Blueprint('test_position',__name__)
 @test_position.route("/test/rover/<int:rover_id>/position")

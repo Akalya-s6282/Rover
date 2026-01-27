@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from .models import Hotel
+from .models.models import Hotel
 from .db import db
 
 auth = Blueprint("auth", __name__)
@@ -39,7 +39,7 @@ def login():
         if hotel and hotel.check_password(password):
             session.clear()
             session["hotel_id"] = hotel.id
-            return redirect(url_for("rovers.dashboard"))
+            return redirect(url_for("users.dashboard"))
 
         flash("Invalid username or password")
 
