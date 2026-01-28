@@ -1,54 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Rover Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <div class="header">
-    <h1>Rover Dashboard</h1>
-    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rover Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="header">
+      <h1>Rover Dashboard</h1>
+      <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
+    </div>
 
-  <div class="container">
-    {% for rover in rovers %}
-      <div class="rover-block" data-url="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}">
+    <div class="container">
+      {% for rover in rovers %}
+      <div
+        class="rover-block"
+        data-url="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}"
+      >
         <div class="rover-name">{{ rover.name }}</div>
-        {% for pos in rover.positions %}
-          <div class="lat">Aisle: {{ pos.lat }}</div>
-          <div class="lon">Table No: {{ pos.lon }}</div>
-          <div class="phase">Phase: {{ pos.phase }}</div>
-          <div class="status">Status: {{ pos.status }}</div>
+        {% if rover.positions %} {% set pos = rover.positions[-1] %}
+
+        <div class="lat">Aisle: {{ pos.lat }}</div>
+        <div class="lon">Table No: {{ pos.lon }}</div>
+        <div class="phase">Phase: {{ pos.phase }}</div>
+        <div class="status">Status: {{ pos.status }}</div>
+
         {% else %}
-          <div class="no-position">No positions yet</div>
-        {% endfor %}
-        <form action="{{ url_for('users.delete_rover', rover_id=rover.id) }}" method="post" class="delete-form">
+        <div class="no-position">No data yet</div>
+        {% endif %}
+        <form
+          action="{{ url_for('users.delete_rover', rover_id=rover.id) }}"
+          method="post"
+          class="delete-form"
+        >
           <button type="submit" class="delete-btn">Delete Rover</button>
         </form>
       </div>
-    {% endfor %}
+      {% endfor %}
 
-    <div class="add-button" onclick="toggleForm()">+</div>
-  </div>
-
-  <!-- Modal Form -->
-  <div id="formModal" class="form-modal">
-    <div class="form-container">
-      <span class="close-btn" onclick="toggleForm()">&times;</span>
-      <h2>Add New Rover</h2>
-      <form id="addForm" method="POST">
-        <input type="text" name="id" placeholder="Rover ID" required>
-        <input type="text" name="name" placeholder="Rover Name" required>
-        <button type="submit" class="submit-btn">Add Rover</button>
-      </form>
+      <div class="add-button" onclick="toggleForm()">+</div>
     </div>
-  </div>
 
-  <div class="footer">
-    <a href="{{ url_for('users.configure_system') }}" class="config-link">System Configuration</a>
-  </div>
+    <!-- Modal Form -->
+    <div id="formModal" class="form-modal">
+      <div class="form-container">
+        <span class="close-btn" onclick="toggleForm()">&times;</span>
+        <h2>Add New Rover</h2>
+        <form id="addForm" method="POST">
+          <input type="text" name="id" placeholder="Rover ID" required />
+          <input type="text" name="name" placeholder="Rover Name" required />
+          <button type="submit" class="submit-btn">Add Rover</button>
+        </form>
+      </div>
+    </div>
 
-  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</body>
+    <div class="footer">
+      <a href="{{ url_for('users.configure_system') }}" class="config-link"
+        >System Configuration</a
+      >
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  </body>
 </html>
