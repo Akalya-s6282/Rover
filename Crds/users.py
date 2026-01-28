@@ -5,13 +5,14 @@ from .models.models import Rover, Position, RoverConfig, LatitudeGPIO
 
 users = Blueprint('users',__name__)
 
-@users.route("/rovers", methods=["GET", "POST"])
+@users.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
     if request.method == "POST":
+        id = request.form.get("id")
         name = request.form.get("name")
         hotel_id = session.get('hotel_id')
         if name and hotel_id:
-            new_rover = Rover(name=name, hotel_id=hotel_id)
+            new_rover = Rover(id=id, name=name, hotel_id=hotel_id)
             db.session.add(new_rover)
             db.session.commit()
         return redirect(url_for('users.dashboard'))
@@ -20,7 +21,7 @@ def dashboard():
     rover_list = Rover.query.filter_by(hotel_id=hotel_id).all() if hotel_id else []
     return render_template("index.html", rovers=rover_list)
 
-@users.route("/rover/<int:rover_id>", methods=["GET", "POST"])
+@users.route("/asssign/<int:rover_id>", methods=["GET", "POST"])
 def assign_coordinates(rover_id):
     rover = Rover.query.get_or_404(rover_id)
     if request.method == "POST":
@@ -34,8 +35,8 @@ def assign_coordinates(rover_id):
     return render_template("assign.html", rover=rover)
 
 
-@users.route("/rover/<int:rover_id>/delete", methods=["POST"])
-def delete_rover_func(rover_id):
+@users.route("/delete/<int:rover_id>", methods=["POST"])
+def delete_rover(rover_id):
     rover = Rover.query.get_or_404(rover_id)
 
     # delete child rows first (important)

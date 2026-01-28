@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
-
+from sqlalchemy import desc
 from .db import db
-from .models.models import Rover, RoverConfig
+from .models.models import Rover, RoverConfig, Position
 
 master = Blueprint('master',__name__)
 
@@ -19,6 +19,34 @@ def config():
             for lat in config.latitudes
         ]
     })
+
+@master.route("/get_positions", methods=["GET"])
+def get_positions():
+    rovers = Rover.query.all()
+
+    data = []
+
+    for rover in rovers:
+        last_pos = (
+            Position.query
+            .filter_by(rover_id=rover.id)
+            .order_by(desc(Position.timestamp))
+            .first()
+        )
+
+        if not last_pos:
+            continue
+
+        data.append({
+            "rover_id": rover.id,
+            "lat": last_pos.lat,
+            "lon": last_pos.lon,
+            "phase": last_pos.phase,
+            "status": last_pos.status
+        })
+
+    return jsonify(data)
+
 # Master route to release rovers
 @master.route("/master/release/<int:rover_id>", methods=["POST", "GET"])
 def release(rover_id):

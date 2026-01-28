@@ -11,15 +11,15 @@
 
   <!-- Step 1: Enter Total Latitudes -->
   <form method="POST" class="setup-form">
-    <label>Total Latitudes:</label>
+    <label>Total Ailes:</label>
     <input type="number" name="total_latitudes" value="{{ config.total_latitudes if config else '' }}" required>
-    <button type="button" id="showGpioBtn">Save Total Latitudes</button>
+    <button type="button" id="showGpioBtn">Save Total Ailes</button>
   </form>
 
   <!-- Step 2: GPIO Mapping (shown after config is saved) -->
   <div id="gpioSection" ">
-    <p id="gpioSavedNotice"><b>✓ Total Latitudes Saved {{config.total_latitudes}}</b></p>
-    <h3 >Latitude → GPIO Mapping</h3>
+    <p id="gpioSavedNotice"><b>✓ Total Ailes Saved {{config.total_latitudes}}</b></p>
+    <h3 >Aile → GPIO Mapping</h3>
 
     <form method="POST" class="setup-form">
       <input type="hidden" name="action" value="save_gpio">
