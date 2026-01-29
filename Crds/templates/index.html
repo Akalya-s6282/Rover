@@ -18,6 +18,7 @@
       {% for rover in rovers %}
       <div
         class="rover-block"
+        data-rover-id="{{ rover.id }}"
         data-url="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}"
       >
         <div class="rover-name">{{ rover.name }}</div>
