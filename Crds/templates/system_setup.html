@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>System Setup</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/system_setup.css') }}">
 </head>
 <body>
 <h2>System Latitude Setup</h2>
-<div class ="setup-form">
+<div class="setup-container">
 
   <!-- Step 1: Enter Total Latitudes -->
-  <form method="POST" class="setup-form">
+  <form method="POST" class="setup-form-body">
     <label>Total Ailes:</label>
     <input type="number" name="total_latitudes" value="{{ config.total_latitudes if config else '' }}" required>
     <button type="button" id="showGpioBtn">Save Total Ailes</button>
@@ -21,7 +21,7 @@
     <p id="gpioSavedNotice"><b>✓ Total Ailes Saved {{config.total_latitudes}}</b></p>
     <h3 >Aile → GPIO Mapping</h3>
 
-    <form method="POST" class="setup-form">
+    <form method="POST" class="setup-form-body">
       <input type="hidden" name="action" value="save_gpio">
       <input type="hidden" name="total_latitudes" id="totalLatHidden" value="">
       <div id="gpioInputsContainer"></div>
@@ -31,7 +31,7 @@
 
 </div>
 
-<a href="/" style="display:block;text-align:center;margin:15px;">← Back to Dashboard</a>
+<a href="{{ url_for('users.dashboard') }}" style="display:block;text-align:center;margin:15px;">← Back to Dashboard</a>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

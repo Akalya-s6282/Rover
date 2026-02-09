@@ -1,54 +1,188 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Rover Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Rover</title>
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
+      href="{{ url_for('static', filename='css/index.css') }}"
     />
   </head>
   <body>
-    <div class="header">
-      <h1>Rover Dashboard</h1>
-      <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
-    </div>
+    <aside>
+      <div class="brand">Rover.</div>
+      <nav class="menu">
+        <a href="#" class="active">Overview</a>
+        <a href="#">Active Robots</a>
+        <a href="#">Order History</a>
+        <a href="{{ url_for('users.configure_system') }}">Settings</a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-link">Log Out</a>
+      </nav>
+    </aside>
 
-    <div class="container">
-      {% for rover in rovers %}
-      <div
-        class="rover-block"
-        data-rover-id="{{ rover.id }}"
-        data-url="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}"
-      >
-        <div class="rover-name">{{ rover.name }}</div>
-        {% if rover.positions %} {% set pos = rover.positions[-1] %}
+    <main>
+      <header>
+        <h1>Dashboard</h1>
+        <div class="header-meta">
+          Hotel: {{ hotel_name }} • Shift: {{ shift }} • Time: {{ current_time }}
+        </div>
+      </header>
 
-        <div class="lat">Aisle: {{ pos.lat }}</div>
-        <div class="lon">Table No: {{ pos.lon }}</div>
-        <div class="phase">Phase: {{ pos.phase }}</div>
-        <div class="status">Status: {{ pos.status }}</div>
-
-        {% else %}
-        <div class="no-position">No data yet</div>
-        {% endif %}
-        <form
-          action="{{ url_for('users.delete_rover', rover_id=rover.id) }}"
-          method="post"
-          class="delete-form"
-        >
-          <button type="submit" class="delete-btn">Delete Rover</button>
-        </form>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Active Robots</div>
+          <div class="stat-value">
+            {{ active_rovers }}/{{ rovers | length }}
+          </div>
+          <div class="stat-foot success">● Systems Normal</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Deliveries Today</div>
+          <div class="stat-value">{{ deliveries_today }}</div>
+          <div class="stat-foot success">● Live from database</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Delivery Time</div>
+          <div class="stat-value">{{ avg_delivery_time }}</div>
+        </div>
       </div>
-      {% endfor %}
 
-      <div class="add-button" onclick="toggleForm()">+</div>
-    </div>
+      <div class="table-container">
+        <div class="table-head">
+          <h3>Live Deliveries</h3>
+          <button class="btn-action" onclick="toggleForm()">+ Add Rover</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ROBOT ID</th>
+              <th>STATUS</th>
+              <th>AISLE</th>
+              <th class="col-center">TABLE NO</th>
+              <th class="col-action">ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rover in rovers %}
+            {% if rover.positions %}
+            {% set pos = rover.positions[-1] %}
+            {% set status_text = pos.status %}
+            {% set status_lower = (pos.status or '')|lower %}
+            {% if 'busy' in status_lower or 'transit' in status_lower %}
+              {% set status_class = 'status-busy' %}
+            {% else %}
+              {% set status_class = 'status-active' %}
+            {% endif %}
+            {% set aisle_str = pos.lat|string %}
+            <tr>
+              <td><strong>{{ rover.id }}</strong></td>
+              <td><span class="status-dot {{ status_class }}"></span> {{ status_text }}</td>
+              <td>{{ pos.lat }}</td>
+              {% if pos.lon is not none %}
+              <td class="col-center">{{ pos.lon }}</td>
+              {% else %}
+              <td class="col-center placeholder">—</td>
+              {% endif %}
+              <td class="col-action">
+                <div class="action-group">
+                  <a
+                    class="btn-action link"
+                    href="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}"
+                  >Assign</a>
+                  <form
+                    action="{{ url_for('users.delete_rover', rover_id=rover.id) }}"
+                    method="post"
+                    class="delete-form"
+                  >
+                    <button type="submit" class="btn-icon" title="Delete">🗑</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td><strong>{{ rover.id }}</strong></td>
+              <td><span class="status-dot status-idle"></span> Idle</td>
+              <td>—</td>
+              <td class="col-center placeholder">—</td>
+              <td class="col-action">
+                <div class="action-group">
+                  <a
+                    class="btn-action link"
+                    href="{{ url_for('users.assign_coordinates', rover_id=rover.id) }}"
+                  >Assign</a>
+                  <form
+                    action="{{ url_for('users.delete_rover', rover_id=rover.id) }}"
+                    method="post"
+                    class="delete-form"
+                  >
+                    <button type="submit" class="btn-icon" title="Delete">🗑</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-container history">
+        <div class="table-head">
+          <h3>Order History</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ROBOT ID</th>
+              <th>DESTINATION</th>
+              <th>STATUS</th>
+              <th>STARTED</th>
+              <th>COMPLETED</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for delivery in order_history %}
+            <tr>
+              <td><strong>{{ delivery.rover_id }}</strong></td>
+              <td>
+                {% if delivery.destination_lon is not none %}
+                  Room {{ delivery.destination_lon }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ delivery.status.replace('_', ' ').title() }}</td>
+              <td>
+                {% if delivery.started_at %}
+                  {{ delivery.started_at.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                {% if delivery.completed_at %}
+                  {{ delivery.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5">No deliveries yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
 
     <!-- Modal Form -->
     <div id="formModal" class="form-modal">
       <div class="form-container">
-        <span class="close-btn" onclick="toggleForm()">&times;</span>
+        <button class="close-btn" onclick="toggleForm()">&times;</button>
         <h2>Add New Rover</h2>
         <form id="addForm" method="POST">
           <input type="text" name="id" placeholder="Rover ID" required />
@@ -56,12 +190,6 @@
           <button type="submit" class="submit-btn">Add Rover</button>
         </form>
       </div>
-    </div>
-
-    <div class="footer">
-      <a href="{{ url_for('users.configure_system') }}" class="config-link"
-        >System Configuration</a
-      >
     </div>
 
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>

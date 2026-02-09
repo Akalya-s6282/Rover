@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 
 from .db import db
-from .models.models import Rover, Position
+from .models.models import Rover, Position, Delivery
+from datetime import datetime
 
 rovers = Blueprint('rovers',__name__)
 
@@ -62,6 +63,16 @@ def update_position(rover_id):
     # Update rover global status
     rover.status = status
 
+    # Update active delivery state if one exists
+    active_delivery = Delivery.query.filter(
+        Delivery.rover_id == rover.id,
+        Delivery.status.in_(["assigned", "in_progress"])
+    ).order_by(Delivery.started_at.desc()).first()
+
+    if active_delivery and status != "done":
+        if active_delivery.status == "assigned":
+            active_delivery.status = "in_progress"
+
     # 🚦 MASTER CONTROL LOGIC
     if status == "shift":
         # stop all others
@@ -74,6 +85,10 @@ def update_position(rover_id):
         Rover.query.update({Rover.status: "run"})
 
     if status == "done":
+        if active_delivery:
+            active_delivery.status = "completed"
+            active_delivery.completed_at = datetime.utcnow()
+
         Position.query.filter_by(rover_id=rover.id).delete()
         rover.status = "idle"   # or "completed"
         db.session.commit()

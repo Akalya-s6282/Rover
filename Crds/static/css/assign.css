@@ -1,0 +1,111 @@
+/* Professional dashboard theme */
+:root {
+  --bg: #f4f7fb;
+  --bg-accent: #e8f0fb;
+  --text: #0f1b33;
+  --muted: #5b6b7f;
+  --card: #ffffff;
+  --border: #d8e2ef;
+  --primary: #0a2540;
+  --primary-hover: #0a2540;
+  --shadow: 0 16px 40px rgba(15, 27, 51, 0.12);
+  --focus: 0 0 0 3px rgba(31, 77, 143, 0.18);
+}
+
+body {
+  background: radial-gradient(1200px 600px at 12% -10%, var(--bg-accent), var(--bg) 55%);
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Source Sans 3", "Segoe UI", Tahoma, sans-serif;
+  color: var(--text);
+  padding: 0;
+}
+
+.assign-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 24px;
+}
+
+h2 {
+  text-align: center;
+  margin: 0 0 20px 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.assign-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 36px;
+  width: min(640px, 92vw);
+  box-shadow: var(--shadow);
+}
+
+.assign-form {
+  display: grid;
+  gap: 18px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.field-row label {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text);
+}
+
+input[type="number"],
+input {
+  width: 100%;
+  height: 40px;
+  background: #ffffff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.back {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.back a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  width: fit-content;
+  justify-self: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 10px 24px rgba(15, 27, 51, 0.18);
+  transform: translateY(-1px);
+}
+
+input:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus);
+}

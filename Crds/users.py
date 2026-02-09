@@ -1,7 +1,8 @@
 from flask import Blueprint, redirect, request, render_template, url_for, session
+from datetime import datetime, timedelta
 
 from .db import db
-from .models.models import Rover, Position, RoverConfig, LatitudeGPIO
+from .models.models import Rover, Position, RoverConfig, LatitudeGPIO, Delivery, Hotel
 
 users = Blueprint('users',__name__)
 
@@ -18,8 +19,82 @@ def dashboard():
         return redirect(url_for('users.dashboard'))
     
     hotel_id = session.get('hotel_id')
+    hotel = Hotel.query.get(hotel_id) if hotel_id else None
+    hotel_name = hotel.name if hotel else "—"
     rover_list = Rover.query.filter_by(hotel_id=hotel_id).all() if hotel_id else []
-    return render_template("index.html", rovers=rover_list)
+
+    # Dashboard metrics
+    active_statuses = ["run", "delivering", "shift"]
+    active_rovers = Rover.query.filter(
+        Rover.hotel_id == hotel_id,
+        Rover.status.in_(active_statuses)
+    ).count() if hotel_id else 0
+
+    now = datetime.now()
+    day_start = datetime(now.year, now.month, now.day)
+    day_end = day_start + timedelta(days=1)
+
+    hour = now.hour
+    if 5 <= hour < 12:
+        shift = "Morning"
+    elif 12 <= hour < 17:
+        shift = "Afternoon"
+    elif 17 <= hour < 22:
+        shift = "Evening"
+    else:
+        shift = "Night"
+
+    current_time = now.strftime("%H:%M")
+
+    deliveries_today = Delivery.query.filter(
+        Delivery.hotel_id == hotel_id,
+        Delivery.status == "completed",
+        Delivery.completed_at >= day_start,
+        Delivery.completed_at < day_end
+    ).all() if hotel_id else []
+
+    deliveries_today_count = len(deliveries_today)
+
+    def format_duration(seconds):
+        if seconds is None:
+            return "—"
+        minutes = int(seconds // 60)
+        secs = int(seconds % 60)
+        if minutes >= 60:
+            hours = minutes // 60
+            minutes = minutes % 60
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m {secs}s"
+
+    avg_delivery_time = None
+    if deliveries_today:
+        total_seconds = 0
+        for d in deliveries_today:
+            if d.completed_at and d.started_at:
+                total_seconds += (d.completed_at - d.started_at).total_seconds()
+        if total_seconds > 0:
+            avg_delivery_time = total_seconds / max(len(deliveries_today), 1)
+
+    avg_delivery_time_str = format_duration(avg_delivery_time)
+
+    order_history = Delivery.query.filter(
+        Delivery.hotel_id == hotel_id
+    ).order_by(
+        Delivery.completed_at.desc().nullslast(),
+        Delivery.started_at.desc()
+    ).limit(10).all() if hotel_id else []
+
+    return render_template(
+        "index.html",
+        rovers=rover_list,
+        active_rovers=active_rovers,
+        deliveries_today=deliveries_today_count,
+        avg_delivery_time=avg_delivery_time_str,
+        order_history=order_history,
+        hotel_name=hotel_name,
+        shift=shift,
+        current_time=current_time
+    )
 
 @users.route("/asssign/<int:rover_id>", methods=["GET", "POST"])
 def assign_coordinates(rover_id):
@@ -30,6 +105,26 @@ def assign_coordinates(rover_id):
         rover.location_lat = lat
         rover.location_lon = lon
         rover.status = 'delivering'
+
+        # Close any active delivery for this rover before creating a new one
+        active_delivery = Delivery.query.filter(
+            Delivery.rover_id == rover.id,
+            Delivery.status.in_(["assigned", "in_progress"])
+        ).order_by(Delivery.started_at.desc()).first()
+
+        if active_delivery:
+            active_delivery.status = "canceled"
+            active_delivery.completed_at = datetime.utcnow()
+
+        new_delivery = Delivery(
+            rover_id=rover.id,
+            hotel_id=rover.hotel_id,
+            destination_lat=lat,
+            destination_lon=lon,
+            status="assigned",
+            started_at=datetime.utcnow()
+        )
+        db.session.add(new_delivery)
         db.session.commit()
         return redirect(url_for('users.assign_coordinates', rover_id=rover.id))
     return render_template("assign.html", rover=rover)

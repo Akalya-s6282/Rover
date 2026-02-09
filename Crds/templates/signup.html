@@ -2,103 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hotel Signup</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4CAF50, #2e7d32);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
-
-        .signup-box {
-            background: white;
-            padding: 40px;
-            width: 320px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,.3);
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 25px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #4CAF50;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        button:hover {
-            background: #43a047;
-        }
-
-        .error {
-            color: red;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .login-link {
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .login-link a {
-            color: #4CAF50;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-    </style> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Rover</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
 </head>
-<body class="signup-body">
+<body>
+    <div class="signup-card">
+        <span class="logo">Rover.</span>
+        <div class="subtitle">Create your Hotel Delivery Command Center</div>
 
-<div class="signup-box">
-    <h2>Create Hotel Account</h2>
+        <form method="POST">
+            <div class="input-group">
+                <label for="hotel_name">Hotel Name</label>
+                <input id="hotel_name" type="text" name="hotel_name" placeholder="Hotel Name" required>
+            </div>
+            <div class="input-group">
+                <label for="username">Work Email</label>
+                <input id="username" type="text" name="username" placeholder="manager@hotelname.com" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Create Account</button>
+        </form>
 
-    <form method="POST">
-        <input type="text" name="hotel_name" placeholder="Hotel Name" required>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="error">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
 
-        <button type="submit">Sign Up</button>
-    </form>
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="error">{{ messages[0] }}</div>
-      {% endif %}
-    {% endwith %}
-
-    <div class="login-link">
-        Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+        <div class="links">
+            Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+        </div>
     </div>
-</div>
-
 </body>
 </html>

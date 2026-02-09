@@ -2,66 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rover Delivery System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1b5e20, #4CAF50);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .box {
-            text-align: center;
-            background: rgba(255,255,255,0.12);
-            padding: 60px;
-            border-radius: 16px;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,.35);
-        }
-
-        h1 {
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
-
-        p {
-            font-size: 18px;
-            opacity: .9;
-            margin-bottom: 35px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 35px;
-            background: white;
-            color: #2e7d32;
-            border-radius: 8px;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 18px;
-            transition: transform .2s, box-shadow .2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,.3);
-        }
-    </style> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rover | Autonomous Hotel Delivery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
 </head>
-<body class ="welcome-body">
+<body>
+    <nav class="nav">
+        <div class="logo">Rover.</div>
+        <div class="nav-links">
+            <a href="#hotels">For Hotels</a>
+            <a href="{{ url_for('auth.login') }}" class="btn-login">Sign In</a>
+        </div>
+    </nav>
 
-<div class="box">
-    <h1>Rover Delivery System</h1>
-    <p>Smart autonomous delivery for modern hotels</p>
+    <header class="hero">
+        <div class="hero-text">
+            <h1>The Future of Room Service is Here.</h1>
+            <p>Smart, autonomous delivery robots designed to delight guests and streamline hotel operations.</p>
+            <a href="{{ url_for('auth.login') }}" class="hero-btn">Get Started</a>
+        </div>
+        <div class="hero-image">
+            <div class="hero-image-frame">
+                <span>[ 3D Robot Image Here ]</span>
+            </div>
+        </div>
+    </header>
 
-    <a href="{{ url_for('auth.login') }}" class="btn">Sign In</a>
-</div>
+    <section id="features" class="features">
+        <h2>Why Choose Rover?</h2>
+        <div class="grid">
+            <div class="card">
+                <span class="icon">🚀</span>
+                <h3>Autonomous Navigation</h3>
+                <p>Seamlessly navigates elevators and corridors without human intervention.</p>
+            </div>
+            <div class="card">
+                <span class="icon">🔒</span>
+                <h3>Secure Delivery</h3>
+                <p>PIN-protected compartments ensure only the right guest gets the order.</p>
+            </div>
+            <div class="card">
+                <span class="icon">⚡</span>
+                <h3>24/7 Availability</h3>
+                <p>Reduce night shifts and keep room service running around the clock.</p>
+            </div>
+        </div>
+    </section>
 
+    <section id="hotels" class="cta">
+        <div class="cta-card">
+            <div>
+                <h3>Built for modern hospitality teams</h3>
+                <p>Integrate with your operations in days, not months. Increase guest satisfaction and reduce costs.</p>
+    </section>
 </body>
 </html>

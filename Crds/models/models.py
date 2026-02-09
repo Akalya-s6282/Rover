@@ -8,7 +8,8 @@ class Hotel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
-    password_hash = db.Column(db.String(128), nullable=False)
+    # Hashes (e.g., scrypt) exceed 128 chars; use a wider column.
+    password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -58,6 +59,20 @@ class Rover(db.Model):
     hotel_id = db.Column(db.Integer, db.ForeignKey('hotel.id'), nullable=False)
 
     positions = db.relationship('Position', backref='rover', lazy=True)
+    deliveries = db.relationship('Delivery', backref='rover', lazy=True)
+
+
+# ====== Deliveries ======
+class Delivery(db.Model):
+    __tablename__ = 'delivery'
+    id = db.Column(db.Integer, primary_key=True)
+    rover_id = db.Column(db.Integer, db.ForeignKey('rover.id'), nullable=False)
+    hotel_id = db.Column(db.Integer, db.ForeignKey('hotel.id'), nullable=False)
+    destination_lat = db.Column(db.Integer, nullable=True)
+    destination_lon = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.String(20), default='assigned')  # assigned | in_progress | completed | canceled
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
 
 
 # ====== Rover Positions ======
