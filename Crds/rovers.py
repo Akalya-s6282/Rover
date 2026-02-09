@@ -59,6 +59,9 @@ def update_position(rover_id):
             status=status
         )
         db.session.add(pos)
+        # Keep rover's latest location in sync for dashboard display
+        rover.location_lat = int(lat)
+        rover.location_lon = int(lon)
 
     # Update rover global status
     rover.status = status

@@ -74,13 +74,14 @@
             {% else %}
               {% set status_class = 'status-active' %}
             {% endif %}
-            {% set aisle_str = pos.lat|string %}
+            {% set aisle_val = rover.location_lat if rover.location_lat else None %}
+            {% set table_val = rover.location_lon if rover.location_lon else None %}
             <tr>
               <td><strong>{{ rover.id }}</strong></td>
               <td><span class="status-dot {{ status_class }}"></span> {{ status_text }}</td>
-              <td>{{ pos.lat }}</td>
-              {% if pos.lon is not none %}
-              <td class="col-center">{{ pos.lon }}</td>
+              <td>{{ aisle_val if aisle_val is not none else '—' }}</td>
+              {% if table_val is not none %}
+              <td class="col-center">{{ table_val }}</td>
               {% else %}
               <td class="col-center placeholder">—</td>
               {% endif %}
@@ -136,7 +137,6 @@
           <thead>
             <tr>
               <th>ROBOT ID</th>
-              <th>DESTINATION</th>
               <th>STATUS</th>
               <th>STARTED</th>
               <th>COMPLETED</th>
@@ -146,13 +146,6 @@
             {% for delivery in order_history %}
             <tr>
               <td><strong>{{ delivery.rover_id }}</strong></td>
-              <td>
-                {% if delivery.destination_lon is not none %}
-                  Room {{ delivery.destination_lon }}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
               <td>{{ delivery.status.replace('_', ' ').title() }}</td>
               <td>
                 {% if delivery.started_at %}
@@ -171,7 +164,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="5">No deliveries yet.</td>
+              <td colspan="4">No deliveries yet.</td>
             </tr>
             {% endfor %}
           </tbody>
