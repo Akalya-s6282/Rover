@@ -31,8 +31,13 @@ def create_app():
     app.register_blueprint(rovers)
     app.register_blueprint(test_position)
     # ---- Create DB once ----
-    with app.app_context():
-        db.create_all()
+    # Skip auto-migration if DB is not reachable (common on first deploy)
+    if os.getenv("SKIP_DB_INIT") != "1":
+        try:
+            with app.app_context():
+                db.create_all()
+        except Exception as exc:
+            print(f"DB init skipped: {exc}")
 
     # ---- Landing page ----
     @app.route("/")
