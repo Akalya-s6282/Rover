@@ -59,14 +59,19 @@ class Rover(db.Model):
     hotel_id = db.Column(db.Integer, db.ForeignKey('hotel.id'), nullable=False)
 
     positions = db.relationship('Position', backref='rover', lazy=True)
-    deliveries = db.relationship('Delivery', backref='rover', lazy=True)
+    deliveries = db.relationship(
+        'Delivery',
+        backref='rover',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
 
 
 # ====== Deliveries ======
 class Delivery(db.Model):
     __tablename__ = 'delivery'
     id = db.Column(db.Integer, primary_key=True)
-    rover_id = db.Column(db.Integer, db.ForeignKey('rover.id'), nullable=False)
+    rover_id = db.Column(db.Integer, db.ForeignKey('rover.id', ondelete='CASCADE'), nullable=False)
     hotel_id = db.Column(db.Integer, db.ForeignKey('hotel.id'), nullable=False)
     destination_lat = db.Column(db.Integer, nullable=True)
     destination_lon = db.Column(db.Integer, nullable=True)

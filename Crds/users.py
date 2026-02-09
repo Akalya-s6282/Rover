@@ -136,6 +136,7 @@ def delete_rover(rover_id):
 
     # delete child rows first (important)
     Position.query.filter_by(rover_id=rover.id).delete()
+    Delivery.query.filter_by(rover_id=rover.id).delete()
 
     # delete rover
     db.session.delete(rover)
