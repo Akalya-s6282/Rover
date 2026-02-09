@@ -238,3 +238,25 @@ body {
     align-items: flex-start;
   }
 }
+
+@media (max-width: 480px) {
+  .nav {
+    padding: 14px 5%;
+  }
+
+  .nav-links {
+    gap: 12px;
+    font-size: 0.9rem;
+  }
+
+  .hero {
+    padding: 44px 5% 32px;
+  }
+
+  .hero-btn,
+  .btn-login,
+  .cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -24,8 +24,8 @@ body {
   font-family: "Segoe UI", Tahoma, sans-serif;
   background: var(--bg);
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: auto;
   color: var(--text);
 }
 
@@ -385,5 +385,40 @@ td.placeholder {
 
   main {
     width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  aside {
+    padding: 1rem;
+    gap: 10px;
+  }
+
+  .brand {
+    margin-bottom: 0;
+    width: 100%;
+  }
+
+  .menu a {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 640px;
   }
 }

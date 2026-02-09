@@ -157,3 +157,31 @@ a[href="/"] {
 a[href="/"]:hover {
   color: var(--primary);
 }
+
+@media (max-width: 520px) {
+  .setup-container {
+    padding: 20px;
+  }
+
+  .setup-form-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .setup-form-body label {
+    min-width: 0;
+  }
+
+  .setup-form-body input {
+    min-width: 0;
+  }
+
+  .setup-form-body button {
+    width: 100%;
+  }
+
+  .gpio-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -42,6 +42,17 @@ body {
   border: 1px solid var(--border);
 }
 
+@media (max-width: 480px) {
+  body {
+    padding: 16px;
+    height: auto;
+  }
+
+  .login-card {
+    padding: 28px 22px;
+  }
+}
+
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
