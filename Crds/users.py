@@ -1,5 +1,6 @@
-from flask import Blueprint, redirect, request, render_template, url_for, session
+from flask import Blueprint, redirect, request, render_template, url_for, session, flash
 from datetime import datetime, timedelta
+from sqlalchemy.exc import IntegrityError
 
 from .db import db
 from .models.models import Rover, Position, RoverConfig, LatitudeGPIO, Delivery, Hotel
@@ -12,10 +13,28 @@ def dashboard():
         id = request.form.get("id")
         name = request.form.get("name")
         hotel_id = session.get('hotel_id')
-        if name and hotel_id:
-            new_rover = Rover(id=id, name=name, hotel_id=hotel_id)
+        if name and hotel_id and id:
+            try:
+                rover_id = int(id)
+            except (TypeError, ValueError):
+                flash("Rover ID must be a number.")
+                return redirect(url_for('users.dashboard'))
+
+            existing = Rover.query.get(rover_id)
+            if existing:
+                if existing.hotel_id != hotel_id:
+                    flash("Rover ID already belongs to another hotel.")
+                else:
+                    flash("Rover ID already exists for this hotel.")
+                return redirect(url_for('users.dashboard'))
+
+            new_rover = Rover(id=rover_id, name=name, hotel_id=hotel_id)
             db.session.add(new_rover)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                flash("Could not save rover due to a database constraint.")
         return redirect(url_for('users.dashboard'))
     
     hotel_id = session.get('hotel_id')
