@@ -7,6 +7,7 @@ function toggleForm() {
     const modal = document.getElementById("formModal");
     modal.classList.toggle("show");
 }
+
 document.querySelectorAll('.rover-block').forEach(block => {
   block.addEventListener('click', e => {
     if (!e.target.closest('form')) {
@@ -14,7 +15,6 @@ document.querySelectorAll('.rover-block').forEach(block => {
     }
   });
 });
-
 
 // Close modal when clicking outside
 window.addEventListener('click', function(event) {
@@ -27,7 +27,7 @@ window.addEventListener('click', function(event) {
 function show_latitudegpio() {
   const gpioSection = document.getElementById("gpioSection");
   gpioSection.style.display = "block";
-  }
+}
 
 // Build GPIO input rows based on entered total latitudes (client-side)
 function buildGpioInputs() {
@@ -79,6 +79,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) btn.addEventListener('click', buildGpioInputs);
 });
 
+function getStatusDotClass(statusValue) {
+  const s = String(statusValue || '').toLowerCase();
+  if (s.includes('busy') || s.includes('transit') || s === 'delivering' || s === 'in_progress') {
+    return 'status-busy';
+  }
+  if (s === 'idle' || s === 'stop') {
+    return 'status-idle';
+  }
+  return 'status-active';
+}
+
 // Poll the server for latest rover positions every 5 seconds
 async function fetchPositions() {
   try {
@@ -90,49 +101,34 @@ async function fetchPositions() {
     const map = {};
     data.forEach(item => { map[item.rover_id] = item; });
 
-    document.querySelectorAll('.rover-block').forEach(block => {
-      const idAttr = block.dataset.roverId || block.getAttribute('data-rover-id');
-      if (!idAttr) return;
-      const rid = parseInt(idAttr, 10);
+    // if modal open, skip updating to avoid interrupting user
+    const modal = document.getElementById('formModal');
+    if (modal && modal.classList.contains('show')) return;
 
-      // if modal open, skip updating to avoid interrupting user
-      const modal = document.getElementById('formModal');
-      if (modal && modal.classList.contains('show')) return;
+    // Live Deliveries table rows only (skip history table)
+    const liveRows = document.querySelectorAll('.table-container:not(.history) tbody tr');
+    liveRows.forEach((row) => {
+      const idText = row.cells?.[0]?.innerText || '';
+      const rid = parseInt(idText.trim(), 10);
+      if (!Number.isFinite(rid)) return;
+
+      const statusCell = row.cells?.[1];
+      const aisleCell = row.cells?.[2];
+      const tableCell = row.cells?.[3];
+      if (!statusCell || !aisleCell || !tableCell) return;
 
       const pos = map[rid];
-
-      // remove any existing no-position element
-      const noPos = block.querySelector('.no-position');
       if (pos) {
-        if (noPos) noPos.remove();
-
-        // update or create fields
-        const setOrCreate = (cls, text) => {
-          let el = block.querySelector('.' + cls);
-          if (!el) {
-            el = document.createElement('div');
-            el.className = cls;
-            block.insertBefore(el, block.querySelector('form') || null);
-          }
-          el.textContent = text;
-        };
-
-        setOrCreate('lat', `Aisle: ${pos.lat}`);
-        setOrCreate('lon', `Table No: ${pos.lon}`);
-        setOrCreate('phase', `Phase: ${pos.phase}`);
-        setOrCreate('status', `Status: ${pos.status}`);
+        const dotClass = getStatusDotClass(pos.status);
+        statusCell.innerHTML = `<span class="status-dot ${dotClass}"></span> ${pos.status}`;
+        aisleCell.textContent = pos.lat;
+        tableCell.textContent = pos.lon;
+        tableCell.classList.remove('placeholder');
       } else {
-        // no data for this rover — remove position fields and show notice
-        ['lat','lon','phase','status'].forEach(c => {
-          const el = block.querySelector('.' + c);
-          if (el) el.remove();
-        });
-        if (!noPos) {
-          const notice = document.createElement('div');
-          notice.className = 'no-position';
-          notice.textContent = 'No data yet';
-          block.insertBefore(notice, block.querySelector('form') || null);
-        }
+        statusCell.innerHTML = '<span class="status-dot status-idle"></span> Idle';
+        aisleCell.textContent = '-';
+        tableCell.textContent = '-';
+        tableCell.classList.add('placeholder');
       }
     });
   } catch (err) {
@@ -144,4 +140,3 @@ async function fetchPositions() {
 fetchPositions();
 if (pollInterval) clearInterval(pollInterval);
 pollInterval = setInterval(fetchPositions, 5000);
-

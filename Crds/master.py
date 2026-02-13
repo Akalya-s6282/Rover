@@ -34,16 +34,24 @@ def get_positions():
             .first()
         )
 
-        if not last_pos:
-            continue
-
-        data.append({
-            "rover_id": rover.id,
-            "lat": last_pos.lat,
-            "lon": last_pos.lon,
-            "phase": last_pos.phase,
-            "status": last_pos.status
-        })
+        if last_pos:
+            data.append({
+                "rover_id": rover.id,
+                "lat": last_pos.lat,
+                "lon": last_pos.lon,
+                "phase": last_pos.phase,
+                "status": last_pos.status
+            })
+        else:
+            # Fallback to rover's current fields so dashboard polling still updates
+            # even before any Position rows are posted by the device.
+            data.append({
+                "rover_id": rover.id,
+                "lat": rover.location_lat,
+                "lon": rover.location_lon,
+                "phase": "lat",
+                "status": rover.status
+            })
 
     return jsonify(data)
 
