@@ -8,6 +8,7 @@ class Hotel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
+    master_id = db.Column(db.String(50), nullable=True, unique=True)
     # Hashes (e.g., scrypt) exceed 128 chars; use a wider column.
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

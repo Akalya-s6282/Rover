@@ -25,26 +25,28 @@
       <header>
         <h1>Dashboard</h1>
         <div class="header-meta">
-          Hotel: {{ hotel_name }} • Shift: {{ shift }} • Time: {{ current_time }}
+          Hotel: <span id="hotelNameValue">{{ hotel_name }}</span> | Shift:
+          <span id="shiftValue">{{ shift }}</span> | Time:
+          <span id="timeValue">{{ current_time }}</span>
         </div>
       </header>
 
       <div class="stats">
         <div class="stat-card">
           <div class="stat-label">Active Robots</div>
-          <div class="stat-value">
+          <div class="stat-value" id="activeRoversValue">
             {{ active_rovers }}/{{ rovers | length }}
           </div>
-          <div class="stat-foot success">● Systems Normal</div>
+          <div class="stat-foot success">- Systems Normal</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Deliveries Today</div>
-          <div class="stat-value">{{ deliveries_today }}</div>
-          <div class="stat-foot success">● Live from database</div>
+          <div class="stat-value" id="deliveriesTodayValue">{{ deliveries_today }}</div>
+          <div class="stat-foot success">- Live from database</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Avg. Delivery Time</div>
-          <div class="stat-value">{{ avg_delivery_time }}</div>
+          <div class="stat-value" id="avgDeliveryTimeValue">{{ avg_delivery_time }}</div>
         </div>
       </div>
 
@@ -63,7 +65,7 @@
               <th class="col-action">ACTION</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="liveDeliveriesBody">
             {% for rover in rovers %}
             {% if rover.positions %}
             {% set pos = rover.positions[-1] %}
@@ -71,6 +73,8 @@
             {% set status_lower = (pos.status or '')|lower %}
             {% if 'busy' in status_lower or 'transit' in status_lower %}
               {% set status_class = 'status-busy' %}
+            {% elif status_lower == 'idle' or status_lower == 'stop' %}
+              {% set status_class = 'status-idle' %}
             {% else %}
               {% set status_class = 'status-active' %}
             {% endif %}
@@ -79,11 +83,11 @@
             <tr>
               <td><strong>{{ rover.id }}</strong></td>
               <td><span class="status-dot {{ status_class }}"></span> {{ status_text }}</td>
-              <td>{{ aisle_val if aisle_val is not none else '—' }}</td>
+              <td>{{ aisle_val if aisle_val is not none else '-' }}</td>
               {% if table_val is not none %}
               <td class="col-center">{{ table_val }}</td>
               {% else %}
-              <td class="col-center placeholder">—</td>
+              <td class="col-center placeholder">-</td>
               {% endif %}
               <td class="col-action">
                 <div class="action-group">
@@ -96,7 +100,7 @@
                     method="post"
                     class="delete-form"
                   >
-                    <button type="submit" class="btn-icon" title="Delete">🗑</button>
+                    <button type="submit" class="btn-icon" title="Delete">Delete</button>
                   </form>
                 </div>
               </td>
@@ -105,8 +109,8 @@
             <tr>
               <td><strong>{{ rover.id }}</strong></td>
               <td><span class="status-dot status-idle"></span> Idle</td>
-              <td>—</td>
-              <td class="col-center placeholder">—</td>
+              <td>-</td>
+              <td class="col-center placeholder">-</td>
               <td class="col-action">
                 <div class="action-group">
                   <a
@@ -118,7 +122,7 @@
                     method="post"
                     class="delete-form"
                   >
-                    <button type="submit" class="btn-icon" title="Delete">🗑</button>
+                    <button type="submit" class="btn-icon" title="Delete">Delete</button>
                   </form>
                 </div>
               </td>
@@ -142,7 +146,7 @@
               <th>COMPLETED</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="orderHistoryBody">
             {% for delivery in order_history %}
             <tr>
               <td><strong>{{ delivery.rover_id }}</strong></td>
@@ -151,14 +155,14 @@
                 {% if delivery.started_at %}
                   {{ delivery.started_at.strftime('%Y-%m-%d %H:%M') }}
                 {% else %}
-                  —
+                  -
                 {% endif %}
               </td>
               <td>
                 {% if delivery.completed_at %}
                   {{ delivery.completed_at.strftime('%Y-%m-%d %H:%M') }}
                 {% else %}
-                  —
+                  -
                 {% endif %}
               </td>
             </tr>
@@ -172,7 +176,6 @@
       </div>
     </main>
 
-    <!-- Modal Form -->
     <div id="formModal" class="form-modal">
       <div class="form-container">
         <button class="close-btn" onclick="toggleForm()">&times;</button>

@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 import os
 from .db import db
+from sqlalchemy import inspect, text
 
 # blueprints
 from .users import users
@@ -36,8 +37,18 @@ def create_app():
         try:
             with app.app_context():
                 db.create_all()
+                inspector = inspect(db.engine)
+                hotel_columns = {col["name"] for col in inspector.get_columns("hotel")}
+                if "master_id" not in hotel_columns:
+                    db.session.execute(text("ALTER TABLE hotel ADD COLUMN master_id VARCHAR(50)"))
+                    db.session.commit()
+                db.session.execute(
+                    text("CREATE UNIQUE INDEX IF NOT EXISTS uq_hotel_master_id ON hotel (master_id)")
+                )
+                db.session.commit()
         except Exception as exc:
             print(f"DB init skipped: {exc}")
+
 
     # ---- Landing page ----
     @app.route("/")

@@ -9,17 +9,25 @@
 <h2>System Latitude Setup</h2>
 <div class="setup-container">
 
+  <form method="POST" class="setup-form-body">
+    <input type="hidden" name="action" value="save_master_id">
+    <label>Master ID:</label>
+    <input type="text" name="master_id" value="{{ hotel.master_id if hotel and hotel.master_id else '' }}" required>
+    <button type="submit">Save Master ID</button>
+  </form>
+
   <!-- Step 1: Enter Total Latitudes -->
   <form method="POST" class="setup-form-body">
+    <input type="hidden" name="action" value="save_total">
     <label>Total Ailes:</label>
     <input type="number" name="total_latitudes" value="{{ config.total_latitudes if config else '' }}" required>
     <button type="button" id="showGpioBtn">Save Total Ailes</button>
   </form>
 
   <!-- Step 2: GPIO Mapping (shown after config is saved) -->
-  <div id="gpioSection" ">
-    <p id="gpioSavedNotice"><b>✓ Total Ailes Saved {{config.total_latitudes}}</b></p>
-    <h3 >Aile → GPIO Mapping</h3>
+  <div id="gpioSection">
+    <p id="gpioSavedNotice"><b>Total Ailes Saved {{ config.total_latitudes if config else "" }}</b></p>
+    <h3>Aile to GPIO Mapping</h3>
 
     <form method="POST" class="setup-form-body">
       <input type="hidden" name="action" value="save_gpio">
@@ -31,7 +39,12 @@
 
 </div>
 
-<a href="{{ url_for('users.dashboard') }}" style="display:block;text-align:center;margin:15px;">← Back to Dashboard</a>
+<a href="{{ url_for('users.dashboard') }}" style="display:block;text-align:center;margin:15px;">Back to Dashboard</a>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <p style="text-align:center;">{{ messages[0] }}</p>
+  {% endif %}
+{% endwith %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, request, render_template, url_for, session, flash
+from flask import Blueprint, redirect, request, render_template, url_for, session, flash, jsonify
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 
@@ -115,6 +115,111 @@ def dashboard():
         current_time=current_time
     )
 
+@users.route("/dashboard/live", methods=["GET"])
+def dashboard_live():
+    hotel_id = session.get('hotel_id')
+    if not hotel_id:
+        return jsonify({"ok": False, "message": "Unauthorized"}), 401
+
+    hotel = Hotel.query.get_or_404(hotel_id)
+    rover_list = Rover.query.filter_by(hotel_id=hotel_id).all()
+
+    active_statuses = ["run", "delivering", "shift"]
+    active_rovers = Rover.query.filter(
+        Rover.hotel_id == hotel_id,
+        Rover.status.in_(active_statuses)
+    ).count()
+
+    now = datetime.now()
+    day_start = datetime(now.year, now.month, now.day)
+    day_end = day_start + timedelta(days=1)
+
+    hour = now.hour
+    if 5 <= hour < 12:
+        shift = "Morning"
+    elif 12 <= hour < 17:
+        shift = "Afternoon"
+    elif 17 <= hour < 22:
+        shift = "Evening"
+    else:
+        shift = "Night"
+
+    deliveries_today = Delivery.query.filter(
+        Delivery.hotel_id == hotel_id,
+        Delivery.status == "completed",
+        Delivery.completed_at >= day_start,
+        Delivery.completed_at < day_end
+    ).all()
+
+    avg_delivery_time = None
+    if deliveries_today:
+        total_seconds = 0
+        for delivery in deliveries_today:
+            if delivery.completed_at and delivery.started_at:
+                total_seconds += (delivery.completed_at - delivery.started_at).total_seconds()
+        if total_seconds > 0:
+            avg_delivery_time = total_seconds / max(len(deliveries_today), 1)
+
+    def format_duration(seconds):
+        if seconds is None:
+            return "-"
+        minutes = int(seconds // 60)
+        secs = int(seconds % 60)
+        if minutes >= 60:
+            hours = minutes // 60
+            minutes = minutes % 60
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m {secs}s"
+
+    live_deliveries = []
+    for rover in rover_list:
+        last_pos = Position.query.filter_by(rover_id=rover.id)\
+                                 .order_by(Position.timestamp.desc())\
+                                 .first()
+        if last_pos:
+            live_deliveries.append({
+                "rover_id": rover.id,
+                "status": last_pos.status,
+                "lat": last_pos.lat,
+                "lon": last_pos.lon
+            })
+        else:
+            live_deliveries.append({
+                "rover_id": rover.id,
+                "status": rover.status or "idle",
+                "lat": rover.location_lat,
+                "lon": rover.location_lon
+            })
+
+    order_history = Delivery.query.filter(
+        Delivery.hotel_id == hotel_id
+    ).order_by(
+        Delivery.completed_at.desc().nullslast(),
+        Delivery.started_at.desc()
+    ).limit(10).all()
+
+    history_rows = []
+    for delivery in order_history:
+        history_rows.append({
+            "rover_id": delivery.rover_id,
+            "status": (delivery.status or "").replace("_", " ").title(),
+            "started": delivery.started_at.strftime("%Y-%m-%d %H:%M") if delivery.started_at else "-",
+            "completed": delivery.completed_at.strftime("%Y-%m-%d %H:%M") if delivery.completed_at else "-"
+        })
+
+    return jsonify({
+        "ok": True,
+        "hotel_name": hotel.name,
+        "shift": shift,
+        "current_time": now.strftime("%H:%M"),
+        "active_rovers": active_rovers,
+        "total_rovers": len(rover_list),
+        "deliveries_today": len(deliveries_today),
+        "avg_delivery_time": format_duration(avg_delivery_time),
+        "live_deliveries": live_deliveries,
+        "order_history": history_rows
+    })
+
 @users.route("/asssign/<int:rover_id>", methods=["GET", "POST"])
 def assign_coordinates(rover_id):
     rover = Rover.query.get_or_404(rover_id)
@@ -164,12 +269,39 @@ def delete_rover(rover_id):
     return redirect(url_for("users.dashboard"))
 @users.route("/system/setup", methods=["GET", "POST"])
 def configure_system():
+    hotel_id = session.get('hotel_id')
+    if not hotel_id:
+        flash("Please login first.")
+        return redirect(url_for("auth.login"))
+
+    hotel = Hotel.query.get_or_404(hotel_id)
+
     if request.method == "POST":
         action = request.form.get("action")
         print(f"DEBUG: Action = {action}")
         print(f"DEBUG: Form data = {request.form}")
 
-        config = RoverConfig.query.first()
+        config = RoverConfig.query.filter_by(hotel_id=hotel_id).first()
+
+        if action == "save_master_id":
+            master_id = (request.form.get("master_id") or "").strip()
+
+            if not master_id:
+                flash("Master ID is required.")
+                return redirect(url_for("users.configure_system"))
+
+            existing = Hotel.query.filter(
+                Hotel.master_id == master_id,
+                Hotel.id != hotel_id
+            ).first()
+            if existing:
+                flash("Master ID already in use by another hotel.")
+                return redirect(url_for("users.configure_system"))
+
+            hotel.master_id = master_id
+            db.session.commit()
+            flash("Master ID saved successfully.")
+            return redirect(url_for("users.configure_system"))
 
         # Action 1: Save total latitudes
         if action == "save_total":
@@ -179,7 +311,7 @@ def configure_system():
             if total:
                 total = int(total)
                 if not config:
-                    config = RoverConfig(total_latitudes=total, hotel_id=session.get('hotel_id'))
+                    config = RoverConfig(total_latitudes=total, hotel_id=hotel_id)
                     db.session.add(config)
                     print(f"DEBUG: Creating new config with total_latitudes = {total}")
                 else:
@@ -191,7 +323,7 @@ def configure_system():
                 # Post/Redirect/Get — redirect so the GET will render GPIO inputs
                 return redirect(url_for("users.configure_system", show_gpio=1))
 
-        # Action 2: Save GPIO configuration
+        # Action 2:  Save GPIO configuration
         elif action == "save_gpio":
             # If no config exists yet, create one using the provided total
             lat_indexes = request.form.getlist("latitude_index")
@@ -206,7 +338,7 @@ def configure_system():
                 else:
                     total = len(lat_indexes)
 
-                config = RoverConfig(total_latitudes=total, hotel_id=session.get('hotel_id'))
+                config = RoverConfig(total_latitudes=total, hotel_id=hotel_id)
                 db.session.add(config)
                 db.session.commit()
                 print(f"DEBUG: Created new config with total_latitudes={total}")
@@ -228,11 +360,11 @@ def configure_system():
             return redirect(url_for("users.dashboard"))
 
     # GET request - query config fresh
-    config = RoverConfig.query.first()
+    config = RoverConfig.query.filter_by(hotel_id=hotel_id).first()
     print(f"DEBUG: GET request - config = {config}")
     if config:
         print(f"DEBUG: Config total_latitudes = {config.total_latitudes}")
 
     show_gpio = request.args.get('show_gpio')
-    return render_template("system_setup.html", config=config, show_gpio=show_gpio)
+    return render_template("system_setup.html", config=config, show_gpio=show_gpio, hotel=hotel)
 
