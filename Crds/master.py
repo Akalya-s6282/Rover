@@ -80,10 +80,11 @@ def get_positions(master_id):
     return jsonify(data)
 
 # Master route to release rovers
-@master.route("/master/release/<int:rover_id>", methods=["POST", "GET"])
-def release(rover_id):
-    hotel = resolve_hotel()
+@master.route("/master/release/<int:rover_id>", defaults={"master_id": None}, methods=["POST", "GET"])
+@master.route("/master/release/<int:rover_id>/<master_id>", methods=["POST", "GET"])
+def release(rover_id, master_id):
     rover = Rover.query.get_or_404(rover_id)
+    hotel = resolve_hotel(master_id) if master_id else Hotel.query.get_or_404(rover.hotel_id)
     if rover.hotel_id != hotel.id:
         return jsonify({"ok": False, "message": "Rover does not belong to this master"}), 403
 
@@ -105,7 +106,7 @@ def stop_all(master_id):
     hotel = resolve_hotel(master_id)
     rovers = Rover.query.filter_by(hotel_id=hotel.id).all()
     for r in rovers:
-        if r.status != 'shift' and r.phase != 'lat':
+        if r.status != 'shift':
             r.status = 'stop'
     db.session.commit()
     return jsonify({"stopped": True})
