@@ -71,9 +71,9 @@ def get_positions(master_id):
                 "rover_id": rover.id,
                 "hotel_id": rover.hotel_id,
                 "master_id": hotel.master_id,
-                "lat": rover.location_lat,
-                "lon": rover.location_lon,
-                "phase": "lat",
+                "lat": None if rover.status == "idle" else rover.location_lat,
+                "lon": None if rover.status == "idle" else rover.location_lon,
+                "phase": "done" if rover.status == "idle" else "lat",
                 "status": rover.status
             })
 

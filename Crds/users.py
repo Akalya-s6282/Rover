@@ -187,8 +187,8 @@ def dashboard_live():
             live_deliveries.append({
                 "rover_id": rover.id,
                 "status": rover.status or "idle",
-                "lat": rover.location_lat,
-                "lon": rover.location_lon
+                "lat": None if (rover.status or "idle") == "idle" else rover.location_lat,
+                "lon": None if (rover.status or "idle") == "idle" else rover.location_lon
             })
 
     order_history = Delivery.query.filter(
@@ -367,4 +367,3 @@ def configure_system():
 
     show_gpio = request.args.get('show_gpio')
     return render_template("system_setup.html", config=config, show_gpio=show_gpio, hotel=hotel)
-
